@@ -61,9 +61,14 @@ volatile bool g_message_recieved = RESET_FLAG;
 volatile bool g_ulps_flag = RESET_FLAG;
 volatile bool g_irq_state = RESET_FLAG;
 volatile bool g_timer_overflow = RESET_FLAG;
+
+static volatile mipi_dsi_receive_result_t g_rx_result;
+volatile mipi_dsi_receive_status_t  g_rx_status;
+static volatile bool                      g_message_received = false;
+
 coord_t touch_coordinates[5];
 
-volatile mipi_dsi_cmd_t * read_cmd;
+mipi_dsi_cmd_t * read_cmd;
 
 /* This table of commands was adapted from sample code provided by FocusLCD
  * Page Link: https://focuslcds.com/product/4-5-tft-display-capacitive-tp-e45ra-mw276-c/
@@ -477,9 +482,13 @@ void mipi_dsi_push_table (const lcd_table_setting_t *table)
             /* Wait */
             while (!g_message_sent);
 
-            g_message_recieved = false;
-            err = mipi_bta_read(&g_mipi_dsi0_ctrl, &msg);
-            handle_error(err, "** MIPI DSI BTA API failed ** \r\n");
+            if(msg.tx_len == 2u)
+            {
+                g_message_recieved = false;
+                err = mipi_bta_read(&g_mipi_dsi0_ctrl, &msg);
+                handle_error(err, "** MIPI DSI BTA API failed ** \r\n");
+            }
+
         }
         p_entry++;
     }
@@ -949,11 +958,16 @@ void mipi_dsi_callback(mipi_dsi_callback_args_t *p_args)
         case MIPI_DSI_EVENT_FATAL:
         {
             __NOP();
+            err = MIPI_DSI_EVENT_FATAL;
+            APP_ERR_TRAP(err);
             break;
         }
         case MIPI_DSI_EVENT_RECEIVE:
         {
-            g_message_recieved = SET_FLAG;
+//            g_message_recieved = SET_FLAG;
+            g_message_received = (p_args->tx_status == MIPI_DSI_SEQUENCE_STATUS_RX_ACK_AND_ERROR);
+            g_rx_result        = *p_args->p_result;
+            g_rx_status       |= p_args->rx_status;
             break;
         }
         default:
@@ -1038,13 +1052,12 @@ void mipi_dsi_entry(void)
 static fsp_err_t mipi_bta_read(mipi_dsi_ctrl_t * const p_api_ctrl, mipi_dsi_cmd_t * p_cmd)
 {
     fsp_err_t err = FSP_SUCCESS;
-    static volatile mipi_dsi_receive_result_t rx_result;
 
     mipi_dsi_instance_ctrl_t * p_ctrl = (mipi_dsi_instance_ctrl_t *) p_api_ctrl;
 
     uint8_t rx_buffer[10] = {0};
-    rx_result.data[0] = ~p_cmd->p_tx_buffer[0];
-    rx_result.data[1] = ~p_cmd->p_tx_buffer[1];
+    g_rx_result.data[0] = ~p_cmd->p_tx_buffer[0];
+    g_rx_result.data[1] = ~p_cmd->p_tx_buffer[1];
 
     read_cmd = p_cmd;
     read_cmd->cmd_id      = MIPI_DSI_CMD_ID_DCS_READ;
@@ -1053,8 +1066,8 @@ static fsp_err_t mipi_bta_read(mipi_dsi_ctrl_t * const p_api_ctrl, mipi_dsi_cmd_
 
     g_phy_status       = MIPI_DSI_PHY_STATUS_NONE;
     g_dsi_status = RESET_VALUE;
-//    g_message_sent     = 0;
-//    g_message_received = 0;
+    g_message_sent     = 0;
+    g_message_received = 0;
     (void) R_MIPI_DSI_Command(p_ctrl, read_cmd);
 
     err = wait_for_mipi_dsi_irq(MIPI_DSI_EVENT_RECEIVE);

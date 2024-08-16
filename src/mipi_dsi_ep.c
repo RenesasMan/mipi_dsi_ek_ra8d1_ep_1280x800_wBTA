@@ -26,6 +26,9 @@
 #include "hal_data.h"
 #include "common_utils.h"
 
+#define USE_FOCUS_LCD       false
+#define USE_CRYSTALFONTZ    !(USE_FOCUS_LCD)
+
 /*******************************************************************************************************************//**
  * @addtogroup mipi_dsi_ep
  * @{
@@ -215,9 +218,10 @@ const lcd_table_setting_t g_lcd_init_focuslcd[] =
 //CrystalFontz uses the ILI9881C, CFAF7201280A0-050TC
 const lcd_table_setting_t lcd_init_CrystalFontz1280x720[] =
 {
+     //CMD_Page 3
      {4,  {0xFF, 0x98, 0x81, 0x03},           MIPI_DSI_CMD_ID_DCS_LONG_WRITE, MIPI_DSI_CMD_FLAG_LOW_POWER},
      {120, {0},                               MIPI_DSI_DISPLAY_CONFIG_DATA_DELAY_FLAG,   (mipi_dsi_cmd_flag_t)0}, // Sleep out command may not be issued within 120 ms of GPIO HW reset. Wait to ensure timing maintained.
-     {2, {0x01,0x00},                         MIPI_DSI_CMD_ID_DCS_SHORT_WRITE_1_PARAM, MIPI_DSI_CMD_FLAG_LOW_POWER},
+     {2, {0x01,0x00},                         MIPI_DSI_CMD_ID_SET_MAXIMUM_RETURN_PACKET_SIZE, MIPI_DSI_CMD_FLAG_LOW_POWER},
      {2, {0x02,0x00},                         MIPI_DSI_CMD_ID_DCS_SHORT_WRITE_1_PARAM, MIPI_DSI_CMD_FLAG_LOW_POWER},
      {2, {0x03,0x73},                         MIPI_DSI_CMD_ID_DCS_SHORT_WRITE_1_PARAM, MIPI_DSI_CMD_FLAG_LOW_POWER},
      {2, {0x04,0x00},                         MIPI_DSI_CMD_ID_DCS_SHORT_WRITE_1_PARAM, MIPI_DSI_CMD_FLAG_LOW_POWER},
@@ -364,6 +368,7 @@ const lcd_table_setting_t lcd_init_CrystalFontz1280x720[] =
      {2, {0xB5,0x06},                         MIPI_DSI_CMD_ID_DCS_SHORT_WRITE_1_PARAM, MIPI_DSI_CMD_FLAG_LOW_POWER},
      {2, {0x3A,0x24},                         MIPI_DSI_CMD_ID_DCS_SHORT_WRITE_1_PARAM, MIPI_DSI_CMD_FLAG_LOW_POWER},
      {2, {0x35,0x1F},                         MIPI_DSI_CMD_ID_DCS_SHORT_WRITE_1_PARAM, MIPI_DSI_CMD_FLAG_LOW_POWER},
+
      //CMD_Page 1
      {4, {0xFF,0x98,0x81,0x01},               MIPI_DSI_CMD_ID_DCS_LONG_WRITE, MIPI_DSI_CMD_FLAG_LOW_POWER},
      {2, {0x22,0x09},                         MIPI_DSI_CMD_ID_DCS_SHORT_WRITE_1_PARAM, MIPI_DSI_CMD_FLAG_LOW_POWER},
@@ -403,6 +408,7 @@ const lcd_table_setting_t lcd_init_CrystalFontz1280x720[] =
      {2, {0xB2,0x60},                         MIPI_DSI_CMD_ID_DCS_SHORT_WRITE_1_PARAM, MIPI_DSI_CMD_FLAG_LOW_POWER},               //VP4
      {2, {0xB3,0x39},                         MIPI_DSI_CMD_ID_DCS_SHORT_WRITE_1_PARAM, MIPI_DSI_CMD_FLAG_LOW_POWER},               //VP0
 
+     {2, {0xB6,0x03},                         MIPI_DSI_CMD_ID_DCS_SHORT_WRITE_1_PARAM, MIPI_DSI_CMD_FLAG_LOW_POWER}, //ADDED set LANSEL_SW to 1, set lanes to 2
      {2, {0xB7,0x03},                         MIPI_DSI_CMD_ID_DCS_SHORT_WRITE_1_PARAM, MIPI_DSI_CMD_FLAG_LOW_POWER}, //ADDED set LANSEL_SW to 1, set lanes to 2
 
      {2, {0xC0,0x08},                         MIPI_DSI_CMD_ID_DCS_SHORT_WRITE_1_PARAM, MIPI_DSI_CMD_FLAG_LOW_POWER},      //VN255 GAMMA N
@@ -484,9 +490,20 @@ void mipi_dsi_push_table (const lcd_table_setting_t *table)
 
             if(msg.tx_len == 2u)
             {
+//                g_message_recieved = false;
+//                err = mipi_bta_read(&g_mipi_dsi0_ctrl, &msg);
+//                handle_error(err, "** MIPI DSI BTA API failed ** \r\n");
+                msg.cmd_id = MIPI_DSI_CMD_ID_DCS_READ;
+                msg.flags |= MIPI_DSI_CMD_FLAG_BTA_READ;
+                g_message_sent = false;
                 g_message_recieved = false;
-                err = mipi_bta_read(&g_mipi_dsi0_ctrl, &msg);
-                handle_error(err, "** MIPI DSI BTA API failed ** \r\n");
+                err = R_MIPI_DSI_Command (&g_mipi_dsi0_ctrl, &msg);
+                handle_error(err, "** MIPI DSI Command API failed ** \r\n");
+
+                /* Wait */
+                while (!g_message_sent && !g_message_recieved);
+                bool result = p_entry->buffer[1] == g_rx_result.data[0];
+                APP_ERR_TRAP(!result);
             }
 
         }

@@ -304,8 +304,8 @@
       <property id="module.driver.display.underflow_1_ipl" value="_disabled"/>
       <property id="module.driver.display.underflow_2_ipl" value="_disabled"/>
       <property id="module.driver.display.input0.enable" value="module.driver.display.input0.enable.true"/>
-      <property id="module.driver.display.input0.hsize" value="480"/>
-      <property id="module.driver.display.input0.vsize" value="854"/>
+      <property id="module.driver.display.input0.hsize" value="720"/>
+      <property id="module.driver.display.input0.vsize" value="1280"/>
       <property id="module.driver.display.layer0.coordinate.x" value="0"/>
       <property id="module.driver.display.layer0.coordinate.y" value="0"/>
       <property id="module.driver.display.input0.buffer_name" value="fb_background"/>
@@ -318,8 +318,8 @@
       <property id="module.driver.display.layer0.fade_control" value="module.driver.display.layer0.fade_control.fade_control_none"/>
       <property id="module.driver.display.layer0.fade_speed" value="0"/>
       <property id="module.driver.display.input1.enable" value="module.driver.display.input1.enable.false"/>
-      <property id="module.driver.display.input1.hsize" value="480"/>
-      <property id="module.driver.display.input1.vsize" value="854"/>
+      <property id="module.driver.display.input1.hsize" value="720"/>
+      <property id="module.driver.display.input1.vsize" value="1280"/>
       <property id="module.driver.display.layer1.coordinate.x" value="0"/>
       <property id="module.driver.display.layer1.coordinate.y" value="0"/>
       <property id="module.driver.display.input1.buffer_name" value="fb_foreground"/>
@@ -331,14 +331,14 @@
       <property id="module.driver.display.input1.lines_repeat_times" value="0"/>
       <property id="module.driver.display.layer1.fade_control" value="module.driver.display.layer1.fade_control.fade_control_none"/>
       <property id="module.driver.display.layer1.fade_speed" value="0"/>
-      <property id="module.driver.display.output.htiming.total_cyc" value="559"/>
-      <property id="module.driver.display.output.htiming.display_cyc" value="480"/>
-      <property id="module.driver.display.output.htiming.back_porch" value="5"/>
+      <property id="module.driver.display.output.htiming.total_cyc" value="800"/>
+      <property id="module.driver.display.output.htiming.display_cyc" value="720"/>
+      <property id="module.driver.display.output.htiming.back_porch" value="35"/>
       <property id="module.driver.display.output.htiming.sync_width" value="2"/>
       <property id="module.driver.display.output.htiming.sync_polarity" value="module.driver.display.output.htiming.sync_polarity.signal_polarity_loactive"/>
-      <property id="module.driver.display.output.vtiming.total_cyc" value="894"/>
-      <property id="module.driver.display.output.vtiming.display_cyc" value="854"/>
-      <property id="module.driver.display.output.vtiming.back_porch" value="20"/>
+      <property id="module.driver.display.output.vtiming.total_cyc" value="1304"/>
+      <property id="module.driver.display.output.vtiming.display_cyc" value="1280"/>
+      <property id="module.driver.display.output.vtiming.back_porch" value="14"/>
       <property id="module.driver.display.output.vtiming.sync_width" value="3"/>
       <property id="module.driver.display.output.vtiming.sync_polarity" value="module.driver.display.output.vtiming.sync_polarity.signal_polarity_loactive"/>
       <property id="module.driver.display.output.data_enable_polarity" value="module.driver.display.output.data_enable_polarity.signal_polarity_hiactive"/>

@@ -27,7 +27,8 @@
 #include "common_utils.h"
 
 #define USE_FOCUS_LCD       false
-#define USE_CRYSTALFONTZ    !(USE_FOCUS_LCD)
+#define USE_CRYSTALFONTZ    false
+#define BUYDISPLAY_TFT080_3 true
 
 /*******************************************************************************************************************//**
  * @addtogroup mipi_dsi_ep
@@ -1309,6 +1310,8 @@ void mipi_dsi_entry(void)
     mipi_dsi_push_table(g_lcd_init_focuslcd);
 #elif (true == USE_CRYSTALFONTZ)
     mipi_dsi_push_table(lcd_init_CrystalFontz1280x720);
+#elif (true == BUYDISPLAY_TFT080_3)
+    mipi_dsi_push_table(lcd_init_ER_TFT080_03);
 #endif
     /* Initialize ICU module */
     err = R_ICU_ExternalIrqOpen(&g_external_irq_ctrl, &g_external_irq_cfg);
